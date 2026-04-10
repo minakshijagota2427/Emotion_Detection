@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 # Load model
-model = load_model("emotion_model.h5")
+model = load_model("model/emotion_model.h5")
 
 emotion_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
 
@@ -11,7 +11,7 @@ emotion_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 # Load image
-img = cv2.imread("test.jpg")
+img = cv2.imread("./test.jpg")
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 faces = face_cascade.detectMultiScale(gray, 1.3, 5)

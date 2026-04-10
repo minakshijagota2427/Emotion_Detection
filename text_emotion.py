@@ -1,34 +1,100 @@
+import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 
-# Improved dataset
+# ---------------- BIGGER DATASET ----------------
 texts = [
-    "I am very happy", "I feel great", "This is awesome", "I love this",
-    "I am sad", "I feel bad", "This is terrible", "I am depressed",
-    "I am angry", "I hate this", "This is frustrating",
-    "Wow amazing", "This is surprising",
-    "I feel okay", "Nothing special", "I am normal"
+    # HAPPY
+    "I am very happy",
+    "I feel amazing",
+    "This is wonderful",
+    "I am excited",
+    "I love this",
+    "Feeling great today",
+    "Life is beautiful",
+    "I am so joyful",
+    "Everything is awesome",
+    "I am smiling",
+    
+    # SAD
+    "I am very sad",
+    "I feel depressed",
+    "This is terrible",
+    "I am unhappy",
+    "I feel lonely",
+    "I want to cry",
+    "Feeling down today",
+    "I am broken",
+    "Life is painful",
+    "I feel hopeless",
+    
+    # ANGRY
+    "I am angry",
+    "I am furious",
+    "This makes me mad",
+    "I am frustrated",
+    "I hate this",
+    "This is annoying",
+    "I am irritated",
+    "I feel rage",
+    "So much anger inside me",
+    "I am losing my temper",
+    
+    # FEAR
+    "I am scared",
+    "I feel afraid",
+    "This is frightening",
+    "I am terrified",
+    "I am nervous",
+    "I feel unsafe",
+    "I am worried",
+    "I feel panic",
+    "This is dangerous",
+    "I am shaking with fear",
+    
+    # SURPRISE
+    "I am surprised",
+    "Oh wow",
+    "This is shocking",
+    "I did not expect this",
+    "Unbelievable",
+    "That is amazing",
+    "What a surprise",
+    "I am shocked",
+    "This is unexpected",
+    "Wow this is crazy",
+    
+    # NEUTRAL
+    "I am okay",
+    "I feel normal",
+    "Nothing special",
+    "Just another day",
+    "I am fine",
+    "Everything is normal",
+    "I feel balanced",
+    "No strong feelings",
+    "Just working",
+    "I am calm"
 ]
 
-labels = [
-    "Happy","Happy","Happy","Happy",
-    "Sad","Sad","Sad","Sad",
-    "Angry","Angry","Angry",
-    "Surprise","Surprise",
-    "Neutral","Neutral","Neutral"
-]
+labels = (
+    ["Happy"]*10 +
+    ["Sad"]*10 +
+    ["Angry"]*10 +
+    ["Fear"]*10 +
+    ["Surprise"]*10 +
+    ["Neutral"]*10
+)
 
-# Better vectorizer
+# ---------------- MODEL ----------------
 vectorizer = TfidfVectorizer()
 X = vectorizer.fit_transform(texts)
 
 model = MultinomialNB()
 model.fit(X, labels)
 
-# Input
-user_input = input("Enter text: ")
+# ---------------- SAVE ----------------
+pickle.dump(model, open("text_model.pkl", "wb"))
+pickle.dump(vectorizer, open("vectorizer.pkl", "wb"))
 
-X_test = vectorizer.transform([user_input])
-prediction = model.predict(X_test)
-
-print("Detected Emotion:", prediction[0])
+print("✅ Text model trained & saved!")
