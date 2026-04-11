@@ -51,6 +51,6 @@ model.fit(
     validation_data=test_data
 )
 
-model.save("emotion_model.h5")
+model.save("model/emotion_model.keras")
 
 print("✅ Model trained & saved!")
