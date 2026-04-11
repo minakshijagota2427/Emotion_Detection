@@ -1,3 +1,4 @@
+# Emotion Detection AI App
 import streamlit as st
 
 # 🔥 FIRST command
