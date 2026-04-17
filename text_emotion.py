@@ -1,7 +1,13 @@
 import pickle
+from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+import re
 
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-zA-Z ]', '', text)
+    return text
 # ---------------- BIGGER DATASET ----------------
 texts = [
     # HAPPY
@@ -87,14 +93,26 @@ labels = (
 )
 
 # ---------------- MODEL ----------------
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(texts)
+vectorizer = TfidfVectorizer(
+    ngram_range=(1,2),   # words + pairs
+    max_features=5000,
+    stop_words='english'
+)
+cleaned_texts = [clean_text(t) for t in texts]
+X = vectorizer.fit_transform(cleaned_texts)
 
-model = MultinomialNB()
-model.fit(X, labels)
+# nb_model = MultinomialNB()
+model = LogisticRegression(max_iter=200)
+# nb_model.fit(X, labels)
+model.fit(X,labels)
 
 # ---------------- SAVE ----------------
-pickle.dump(model, open("text_model.pkl", "wb"))
-pickle.dump(vectorizer, open("vectorizer.pkl", "wb"))
+with open("text_model.pkl", "wb") as f:
+    pickle.dump(model, f)
 
+with open("vectorizer.pkl", "wb") as f:
+    pickle.dump(vectorizer, f)
+
+# print(nb_model.score(X, labels))
+print(model.score(X, labels))
 print("✅ Text model trained & saved!")

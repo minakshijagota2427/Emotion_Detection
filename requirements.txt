@@ -6,6 +6,7 @@ opencv-python
 streamlit
 streamlit-webrtc
 av
+pytesseract
 
 scikit-learn
 pillow
