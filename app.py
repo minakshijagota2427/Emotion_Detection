@@ -1,6 +1,6 @@
 # Emotion Detection AI App
 from cProfile import label
-
+from transformers import pipeline
 import streamlit as st
 import base64
 def set_bg(image_file):
@@ -239,7 +239,14 @@ face_model = tf.keras.models.load_model(
 )
 text_model = pickle.load(open(os.path.join(BASE_DIR, "model/text_model.pkl"), "rb"))
 vectorizer = pickle.load(open(os.path.join(BASE_DIR, "model/vectorizer.pkl"), "rb"))
+@st.cache_resource
+def load_emotion_model():
+    return pipeline(
+        "text-classification",
+        model="bhadresh-savani/bert-base-go-emotion"
+    )
 
+emotion_classifier = load_emotion_model()
 emotion_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
 
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
@@ -248,7 +255,8 @@ class EmotionProcessor(VideoProcessorBase):
     def __init__(self):
         self.emotion_buffer = deque(maxlen=10)   # last 10 frames
         self.latest_emotion = None
-
+        self.frame_count = 0
+        self.latest_confidence = 0
     def recv(self, frame):
 
         img = frame.to_ndarray(format="bgr24")
@@ -275,16 +283,13 @@ class EmotionProcessor(VideoProcessorBase):
 
             face = gray[y:y+h, x:x+w]
             face = cv2.resize(face, (48,48))
-
+            face = cv2.cvtColor(face, cv2.COLOR_GRAY2RGB) 
             face = face / 255.0
-            face = np.reshape(face, (1,48,48,1))
-
+            face = np.reshape(face, (1,48,48,3))
             pred = face_model(face, training=False).numpy()
 
             label = emotion_labels[np.argmax(pred)]
             confidence = float(np.max(pred))
-
-            self.emotion_buffer.append(label)
 
             # most frequent emotion (smooth output)
             self.latest_emotion = max(set(self.emotion_buffer), key=self.emotion_buffer.count)
@@ -424,9 +429,10 @@ elif page == "Text Detection":
     text = st.text_input("Enter text")
 
     if text:
-        cleaned = clean_text(text)
-        X = vectorizer.transform([text])
-        pred = text_model.predict(X)[0]
+        result = emotion_classifier(text)
+
+        pred = result[0]['label']
+        confidence = result[0]['score']
 
         color_map = {
                     "Happy": "#22c55e",
@@ -552,10 +558,10 @@ elif page == "Live Detection":
                     smooth_emotion = max(set(emotion_buffer), key=emotion_buffer.count)
                 else:
                     smooth_emotion = label
-
+                confidence_percent = confidence * 100
                 # DRAW
                 cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
-                cv2.putText(frame, f"{smooth_emotion}",
+                cv2.putText(frame, f"{smooth_emotion} ({confidence_percent:.1f}%)",
                             (x, y-10),
                             cv2.FONT_HERSHEY_SIMPLEX,
                             0.7,
